@@ -1,17 +1,23 @@
 # THE-HARVESTER-OSINT GUI 🛡️
 
-A modern, professional Web GUI for **theHarvester**, one of the most powerful Open Source Intelligence (OSINT) gathering tools. This project transforms the traditional CLI experience into a high-performance, hacker-themed dashboard built with React, FastAPI, and tRPC.
+<div align="center">
+  <img src="app/src/assets/logo.png" alt="THE HARVESTER Logo" width="150" style="margin-bottom: 20px;" />
+</div>
 
-![theHarvester GUI](https://raw.githubusercontent.com/laramies/theHarvester/master/theHarvester-logo.webp)
+A modern, professional Web GUI for **theHarvester**, one of the most powerful Open Source Intelligence (OSINT) gathering tools. This project transforms the traditional CLI experience into a high-performance, hacker-themed dashboard built with React, FastAPI, and tRPC.
 
 ## ✨ Features
 
+- **Professional Logo & Branding**: Aggressive cyber-security themed logo with blood-red and neon-green aesthetics.
+- **Multi-Page Navigation**: Organized interface with Dashboard, Sources, Analytics, Settings, and Documentation pages.
 - **Cyber-Themed Dashboard**: High-tech "Matrix" inspired interface with real-time terminal feedback.
 - **Simplified Scanning**: Select from 60+ OSINT sources with a single click.
 - **Advanced Options**: Support for DNS brute forcing, Shodan queries, and domain takeover checks.
 - **Persistence**: Full scan history and result storage using MySQL and Drizzle ORM.
 - **Real-time Stats**: Live monitoring of OSINT sources and system status.
 - **Export Capabilities**: Download your intelligence gathering results in JSON format.
+- **Source Explorer**: Browse and search through all available OSINT sources with descriptions.
+- **Responsive Design**: Works seamlessly on desktop and tablet devices.
 
 ---
 
@@ -119,11 +125,13 @@ Visit **http://localhost:5173** in your browser to start your OSINT investigatio
 ## 🛠️ Project Structure
 
 | Directory | Description |
-|-----------|-------------|
+|-----------|----------|
 | `app/` | The React + tRPC + Hono web application. |
 | `theHarvester/` | The core OSINT engine (forked from laramies/theHarvester). |
 | `app/api/` | Backend API routes and theHarvester integration logic. |
 | `app/src/components/hacker/` | Custom UI components for the cyber-theme. |
+| `app/src/pages/` | Multi-page components (Home, Dashboard, Sources, etc.). |
+| `app/src/assets/` | Logo and other static assets. |
 
 ---
 

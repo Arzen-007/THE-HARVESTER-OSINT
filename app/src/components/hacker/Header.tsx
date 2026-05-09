@@ -1,27 +1,33 @@
-import { Skull, Terminal, Activity, Shield } from "lucide-react";
+import { Terminal, Activity, Shield } from "lucide-react";
+import { Link } from "react-router";
+import logo from "@/assets/logo.png";
 
 export default function Header() {
   return (
     <header className="relative z-10 border-b border-green-500/20 backdrop-blur-md bg-black/60">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="relative">
-              <Skull className="w-8 h-8 text-green-400 animate-pulse-slow" />
-              <div className="absolute inset-0 w-8 h-8 bg-green-400/20 blur-lg rounded-full" />
+              <img 
+                src={logo} 
+                alt="THE HARVESTER Logo" 
+                className="w-10 h-10 object-contain drop-shadow-lg hover:drop-shadow-2xl transition-all"
+              />
+              <div className="absolute inset-0 w-10 h-10 bg-green-400/20 blur-lg rounded-full" />
             </div>
             <div>
               <h1
                 className="text-2xl font-bold font-cyber tracking-wider text-green-400 glow-green"
-                data-text="theHarvester"
+                data-text="THE HARVESTER"
               >
-                theHarvester
+                THE HARVESTER
               </h1>
               <p className="text-[10px] font-mono-code text-green-600 tracking-[0.3em] uppercase">
                 OSINT Intelligence Suite v4.7
               </p>
             </div>
-          </div>
+          </Link>
 
           <div className="hidden md:flex items-center gap-6">
             <StatusIndicator icon={<Shield className="w-4 h-4" />} label="SECURE" color="green" />
