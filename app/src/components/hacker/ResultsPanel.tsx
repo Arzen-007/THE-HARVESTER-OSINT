@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DataVisualization from "./DataVisualization";
+import ExportDialog from "./ExportDialog";
 import {
   Mail,
   Globe,
@@ -31,6 +32,7 @@ interface ResultsData {
 
 interface ResultsPanelProps {
   results: ResultsData | null;
+  domain?: string;
 }
 
 const RESULT_CONFIGS: Array<{
@@ -50,10 +52,11 @@ const RESULT_CONFIGS: Array<{
   { key: "trello_urls", label: "Trello URLs", icon: <FileText className="w-4 h-4" />, color: "text-emerald-400 border-emerald-400/20 bg-emerald-400/5" },
 ];
 
-export default function ResultsPanel({ results }: ResultsPanelProps) {
+export default function ResultsPanel({ results, domain = "target-domain" }: ResultsPanelProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>(["emails", "hosts"]);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"results" | "visualization">("visualization");
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
   if (!results) return null;
 
@@ -70,17 +73,6 @@ export default function ResultsPanel({ results }: ResultsPanelProps) {
   };
 
   const totalItems = Object.values(results).flat().length;
-
-  const handleExport = () => {
-    const dataStr = JSON.stringify(results, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `harvester-results-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <div className="space-y-4">
@@ -124,13 +116,13 @@ export default function ResultsPanel({ results }: ResultsPanelProps) {
                 SCAN RESULTS
               </h2>
               <button
-                onClick={handleExport}
+                onClick={() => setShowExportDialog(true)}
                 className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono-code 
                          border border-green-500/30 rounded text-green-400
                          hover:bg-green-400/10 hover:border-green-400/50 transition-all"
               >
                 <Download className="w-3.5 h-3.5" />
-                EXPORT JSON
+                EXPORT
               </button>
             </div>
 
@@ -222,6 +214,14 @@ export default function ResultsPanel({ results }: ResultsPanelProps) {
           </div>
         </div>
       )}
+
+      {/* Export Dialog */}
+      <ExportDialog
+        results={results}
+        domain={domain}
+        isOpen={showExportDialog}
+        onClose={() => setShowExportDialog(false)}
+      />
     </div>
   );
 }
