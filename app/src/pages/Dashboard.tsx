@@ -3,6 +3,9 @@ import MatrixRain from "@/components/hacker/MatrixRain";
 import Header from "@/components/hacker/Header";
 import StatsBar from "@/components/hacker/StatsBar";
 import ScannerForm from "@/components/hacker/ScannerForm";
+import AmassScan from "@/components/hacker/AmassScan";
+import SherlockScan from "@/components/hacker/SherlockScan";
+import NucleiScan from "@/components/hacker/NucleiScan";
 import Terminal from "@/components/hacker/Terminal";
 import ResultsPanel from "@/components/hacker/ResultsPanel";
 import ScanHistory from "@/components/hacker/ScanHistory";
@@ -75,7 +78,12 @@ export default function Dashboard() {
 
             <div className="mt-6 grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <TabsContent value="scanner" className="mt-0">
+                <TabsContent value="scanner" className="mt-0 space-y-6">
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <AmassScan />
+                    <SherlockScan />
+                    <NucleiScan />
+                  </div>
                   <ScannerForm
                     onScanComplete={handleScanComplete}
                     onTerminalOutput={addTerminalLine}

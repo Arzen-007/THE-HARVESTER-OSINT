@@ -28,6 +28,9 @@ interface ResultsData {
   asns?: string[];
   linkedin_links?: string[];
   trello_urls?: string[];
+  amass_discovery?: any[];
+  sherlock_account?: any[];
+  nuclei_vulnerability?: any[];
 }
 
 interface ResultsPanelProps {
@@ -50,6 +53,9 @@ const RESULT_CONFIGS: Array<{
   { key: "asns", label: "ASNs", icon: <Network className="w-4 h-4" />, color: "text-pink-400 border-pink-400/20 bg-pink-400/5" },
   { key: "linkedin_links", label: "LinkedIn Links", icon: <FileText className="w-4 h-4" />, color: "text-indigo-400 border-indigo-400/20 bg-indigo-400/5" },
   { key: "trello_urls", label: "Trello URLs", icon: <FileText className="w-4 h-4" />, color: "text-emerald-400 border-emerald-400/20 bg-emerald-400/5" },
+  { key: "amass_discovery", label: "Amass Assets", icon: <Globe className="w-4 h-4" />, color: "text-red-400 border-red-400/20 bg-red-400/5" },
+  { key: "sherlock_account", label: "Sherlock Accounts", icon: <Users className="w-4 h-4" />, color: "text-pink-400 border-pink-400/20 bg-pink-400/5" },
+  { key: "nuclei_vulnerability", label: "Nuclei Vulns", icon: <Check className="w-4 h-4" />, color: "text-orange-400 border-orange-400/20 bg-orange-400/5" },
 ];
 
 export default function ResultsPanel({ results, domain = "target-domain" }: ResultsPanelProps) {
