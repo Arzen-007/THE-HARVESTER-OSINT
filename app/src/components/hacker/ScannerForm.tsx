@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/providers/trpc";
+import ProgressBar from "./ProgressBar";
 import {
   Search,
   Zap,
@@ -86,16 +87,29 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
   const [shodan, setShodan] = useState(false);
   const [takeOver, setTakeOver] = useState(false);
 
+  // Progress tracking
+  const [scanProgress, setScanProgress] = useState(0);
+  const [isScanning, setIsScanning] = useState(false);
+  let progressInterval: NodeJS.Timeout | null = null;
+
   const sourcesQuery = trpc.harvester.sources.useQuery();
   const scanMutation = trpc.harvester.scan.useMutation({
     onSuccess: (data) => {
-      onTerminalOutput(`[+] Scan completed for ${domain}`);
-      onTerminalOutput(`[+] Results: ${Object.values(data.results).flat().length} items found`);
+      setScanProgress(100);
+      onTerminalOutput(`[✓] SUCCESS: Scan completed for ${domain}`);
+      onTerminalOutput(`[+] Found ${Object.values(data.results).flat().length} total items`);
+      onTerminalOutput(`[+] Emails: ${data.results.emails?.length || 0}`);
+      onTerminalOutput(`[+] Hosts: ${data.results.hosts?.length || 0}`);
+      onTerminalOutput(`[+] IPs: ${data.results.ips?.length || 0}`);
       onScanComplete(data.results);
+      setIsScanning(false);
+      setTimeout(() => setScanProgress(0), 2000);
     },
     onError: (err) => {
       onTerminalOutput(`[!] ERROR: ${err.message}`);
       setError(err.message);
+      setIsScanning(false);
+      setScanProgress(0);
     },
   });
 
@@ -131,12 +145,32 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
       return;
     }
     setError("");
-    onTerminalOutput(`[+] Starting scan for: ${domain}`);
-    onTerminalOutput(`[+] Sources: ${selectedSources.join(", ")}`);
-    onTerminalOutput(`[+] Limit: ${limit}`);
-    if (dnsBrute) onTerminalOutput("[+] DNS Brute Force enabled");
-    if (shodan) onTerminalOutput("[+] Shodan Query enabled");
-    onTerminalOutput("[*] Scanning... (this may take a while)");
+    setIsScanning(true);
+    setScanProgress(5);
+    
+    onTerminalOutput(`[*] ========================================`);
+    onTerminalOutput(`[*] OSINT SCAN INITIATED`);
+    onTerminalOutput(`[*] ========================================`);
+    onTerminalOutput(`[+] Target: ${domain}`);
+    onTerminalOutput(`[+] Sources: ${selectedSources.length} selected`);
+    onTerminalOutput(`[+] Result Limit: ${limit}`);
+    if (dnsBrute) onTerminalOutput("[+] DNS Brute Force: ENABLED");
+    if (dnsLookup) onTerminalOutput("[+] DNS Lookup: ENABLED");
+    if (shodan) onTerminalOutput("[+] Shodan Query: ENABLED");
+    if (takeOver) onTerminalOutput("[+] Takeover Check: ENABLED");
+    onTerminalOutput(`[*] Starting scan... this may take a while`);
+    
+    // Simulate progress updates
+    if (progressInterval) clearInterval(progressInterval);
+    progressInterval = setInterval(() => {
+      setScanProgress((prev) => {
+        if (prev >= 95) {
+          if (progressInterval) clearInterval(progressInterval);
+          return prev;
+        }
+        return prev + Math.random() * 12;
+      });
+    }, 1500);
 
     scanMutation.mutate({
       domain,
@@ -148,6 +182,13 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
       takeOver,
     });
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (progressInterval) clearInterval(progressInterval);
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -172,10 +213,11 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder="example.com"
+                disabled={isScanning}
                 className="w-full bg-black/80 border border-green-500/30 rounded-md pl-10 pr-4 py-3 
                          text-green-400 font-mono-code text-sm placeholder:text-green-800
                          focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400/30
-                         transition-all"
+                         transition-all disabled:opacity-50"
               />
             </div>
           </div>
@@ -192,10 +234,11 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
                 onChange={(e) => setLimit(Number(e.target.value))}
                 min={1}
                 max={2000}
+                disabled={isScanning}
                 className="w-full bg-black/80 border border-green-500/30 rounded-md pl-10 pr-4 py-3 
                          text-green-400 font-mono-code text-sm
                          focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400/30
-                         transition-all"
+                         transition-all disabled:opacity-50"
               />
             </div>
           </div>
@@ -213,6 +256,7 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
                 type="checkbox" 
                 checked={dnsBrute} 
                 onChange={(e) => setDnsBrute(e.target.checked)}
+                disabled={isScanning}
                 className="hidden"
               />
               <div className={`w-4 h-4 border rounded-sm flex items-center justify-center transition-all ${dnsBrute ? 'bg-green-400 border-green-400' : 'border-green-600 group-hover:border-green-400'}`}>
@@ -225,6 +269,7 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
                 type="checkbox" 
                 checked={dnsLookup} 
                 onChange={(e) => setDnsLookup(e.target.checked)}
+                disabled={isScanning}
                 className="hidden"
               />
               <div className={`w-4 h-4 border rounded-sm flex items-center justify-center transition-all ${dnsLookup ? 'bg-green-400 border-green-400' : 'border-green-600 group-hover:border-green-400'}`}>
@@ -237,6 +282,7 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
                 type="checkbox" 
                 checked={shodan} 
                 onChange={(e) => setShodan(e.target.checked)}
+                disabled={isScanning}
                 className="hidden"
               />
               <div className={`w-4 h-4 border rounded-sm flex items-center justify-center transition-all ${shodan ? 'bg-green-400 border-green-400' : 'border-green-600 group-hover:border-green-400'}`}>
@@ -249,6 +295,7 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
                 type="checkbox" 
                 checked={takeOver} 
                 onChange={(e) => setTakeOver(e.target.checked)}
+                disabled={isScanning}
                 className="hidden"
               />
               <div className={`w-4 h-4 border rounded-sm flex items-center justify-center transition-all ${takeOver ? 'bg-green-400 border-green-400' : 'border-green-600 group-hover:border-green-400'}`}>
@@ -265,6 +312,18 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
             {error}
           </div>
         )}
+
+        {/* Progress Bar */}
+        {isScanning && (
+          <div className="mt-4 pt-4 border-t border-green-500/10">
+            <ProgressBar 
+              progress={scanProgress} 
+              label="SCAN PROGRESS" 
+              showPercentage={true}
+              animated={true}
+            />
+          </div>
+        )}
       </div>
 
       {/* Sources Selection */}
@@ -278,8 +337,10 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
           </div>
           <button
             onClick={handleSelectAll}
+            disabled={isScanning}
             className="text-xs font-mono-code px-3 py-1.5 border border-green-500/30 rounded
-                     text-green-400 hover:bg-green-400/10 hover:border-green-400/50 transition-all"
+                     text-green-400 hover:bg-green-400/10 hover:border-green-400/50 transition-all
+                     disabled:opacity-50"
           >
             {selectedSources.length === allSources.length ? "DESELECT ALL" : "SELECT ALL"}
           </button>
@@ -305,8 +366,9 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
               <div key={category} className="border border-green-500/10 rounded-md overflow-hidden">
                 <button
                   onClick={() => toggleCategory(category)}
+                  disabled={isScanning}
                   className="w-full flex items-center justify-between px-4 py-2.5 bg-green-500/5
-                           hover:bg-green-400/10 transition-colors text-left"
+                           hover:bg-green-400/10 transition-colors text-left disabled:opacity-50"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-green-400">{icon}</span>
@@ -337,6 +399,7 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
                             type="checkbox" 
                             checked={isSelected} 
                             onChange={() => toggleSource(realSource)}
+                            disabled={isScanning}
                             className="hidden"
                           />
                           <div
@@ -373,20 +436,20 @@ export default function ScannerForm({ onScanComplete, onTerminalOutput }: Scanne
       {/* Scan Button */}
       <button
         onClick={handleScan}
-        disabled={scanMutation.isPending}
+        disabled={scanMutation.isPending || isScanning}
         className="w-full relative overflow-hidden group"
       >
         <div className="absolute inset-0 bg-green-400/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
         <div
           className="relative flex items-center justify-center gap-3 py-4 border-2 border-green-400/50 
                    rounded-lg bg-green-400/5 hover:border-green-400 hover:bg-green-400/10
-                   transition-all duration-300 glow-box-green"
+                   transition-all duration-300 glow-box-green disabled:opacity-50"
         >
-          {scanMutation.isPending ? (
+          {scanMutation.isPending || isScanning ? (
             <>
               <div className="w-5 h-5 border-2 border-green-400 border-t-transparent rounded-full animate-spin" />
               <span className="font-cyber text-green-400 tracking-wider animate-pulse">
-                SCANNING TARGET...
+                SCANNING TARGET... {Math.round(scanProgress)}%
               </span>
             </>
           ) : (
