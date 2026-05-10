@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DataVisualization from "./DataVisualization";
 import {
   Mail,
   Globe,
@@ -13,6 +14,7 @@ import {
   Copy,
   Check,
   Download,
+  BarChart3,
 } from "lucide-react";
 
 interface ResultsData {
@@ -51,6 +53,7 @@ const RESULT_CONFIGS: Array<{
 export default function ResultsPanel({ results }: ResultsPanelProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>(["emails", "hosts"]);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"results" | "visualization">("visualization");
 
   if (!results) return null;
 
@@ -81,109 +84,144 @@ export default function ResultsPanel({ results }: ResultsPanelProps) {
 
   return (
     <div className="space-y-4">
-      {/* Results Summary */}
-      <div className="border-glow rounded-lg p-6 bg-black/50">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-cyber text-green-400 tracking-wide">
-            SCAN RESULTS
-          </h2>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono-code 
-                     border border-green-500/30 rounded text-green-400
-                     hover:bg-green-400/10 hover:border-green-400/50 transition-all"
-          >
-            <Download className="w-3.5 h-3.5" />
-            EXPORT JSON
-          </button>
-        </div>
-
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-          {RESULT_CONFIGS.map(({ key, label, icon, color }) => {
-            const items = (results[key] || []) as string[];
-            return (
-              <div
-                key={key}
-                className={`border rounded-lg p-3 text-center cursor-pointer transition-all hover:scale-105 ${color}`}
-                onClick={() => toggleSection(key as string)}
-              >
-                <div className="flex justify-center mb-1">{icon}</div>
-                <div className="text-lg font-bold font-cyber">{items.length}</div>
-                <div className="text-[10px] font-mono-code opacity-70">{label}</div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 text-center text-xs font-mono-code text-green-600">
-          TOTAL ITEMS DISCOVERED: <span className="text-green-400 font-bold text-sm">{totalItems}</span>
-        </div>
+      {/* Tab Navigation */}
+      <div className="flex gap-2 border-b border-green-500/20">
+        <button
+          onClick={() => setActiveTab("visualization")}
+          className={`px-4 py-2 font-cyber text-sm tracking-wider transition-all flex items-center gap-2 ${
+            activeTab === "visualization"
+              ? "text-green-400 border-b-2 border-green-400"
+              : "text-green-700 hover:text-green-400"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          VISUALIZATION
+        </button>
+        <button
+          onClick={() => setActiveTab("results")}
+          className={`px-4 py-2 font-cyber text-sm tracking-wider transition-all ${
+            activeTab === "results"
+              ? "text-green-400 border-b-2 border-green-400"
+              : "text-green-700 hover:text-green-400"
+          }`}
+        >
+          DETAILED RESULTS
+        </button>
       </div>
 
-      {/* Detailed Results */}
-      <div className="space-y-2">
-        {RESULT_CONFIGS.map(({ key, label, icon, color }) => {
-          const items = (results[key] || []) as string[];
-          if (items.length === 0) return null;
+      {/* Visualization Tab */}
+      {activeTab === "visualization" && (
+        <DataVisualization results={results} />
+      )}
 
-          const isExpanded = expandedSections.includes(key as string);
-
-          return (
-            <div
-              key={key}
-              className="border border-green-500/10 rounded-lg overflow-hidden bg-black/30"
-            >
+      {/* Results Tab */}
+      {activeTab === "results" && (
+        <div className="space-y-4">
+          {/* Results Summary */}
+          <div className="border-glow rounded-lg p-6 bg-black/50">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-cyber text-green-400 tracking-wide">
+                SCAN RESULTS
+              </h2>
               <button
-                onClick={() => toggleSection(key as string)}
-                className={`w-full flex items-center justify-between px-4 py-3 
-                          ${color.split(" ")[2]} hover:brightness-125 transition-all`}
+                onClick={handleExport}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono-code 
+                         border border-green-500/30 rounded text-green-400
+                         hover:bg-green-400/10 hover:border-green-400/50 transition-all"
               >
-                <div className="flex items-center gap-2">
-                  {icon}
-                  <span className="text-sm font-mono-code">{label}</span>
-                  <span className="text-xs opacity-60">({items.length})</span>
-                </div>
-                {isExpanded ? (
-                  <ChevronDown className="w-4 h-4" />
-                ) : (
-                  <ChevronRight className="w-4 h-4" />
-                )}
+                <Download className="w-3.5 h-3.5" />
+                EXPORT JSON
               </button>
-
-              {isExpanded && (
-                <div className="px-4 py-2 max-h-[300px] overflow-y-auto">
-                  <div className="space-y-1">
-                    {items.map((item: string, i: number) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between py-1.5 px-2 rounded
-                                 hover:bg-white/5 group transition-colors"
-                      >
-                        <span className="text-xs font-mono-code text-green-300/80 truncate flex-1">
-                          {typeof item === "string" ? item : JSON.stringify(item)}
-                        </span>
-                        <button
-                          onClick={() =>
-                            copyItem(typeof item === "string" ? item : JSON.stringify(item))
-                          }
-                          className="ml-2 p-1 rounded opacity-0 group-hover:opacity-100 
-                                   hover:bg-green-400/10 transition-all"
-                        >
-                          {copiedItem === (typeof item === "string" ? item : JSON.stringify(item)) ? (
-                            <Check className="w-3 h-3 text-green-400" />
-                          ) : (
-                            <Copy className="w-3 h-3 text-green-600" />
-                          )}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
-          );
-        })}
-      </div>
+
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+              {RESULT_CONFIGS.map(({ key, label, icon, color }) => {
+                const items = (results[key] || []) as string[];
+                return (
+                  <div
+                    key={key}
+                    className={`border rounded-lg p-3 text-center cursor-pointer transition-all hover:scale-105 ${color}`}
+                    onClick={() => toggleSection(key as string)}
+                  >
+                    <div className="flex justify-center mb-1">{icon}</div>
+                    <div className="text-lg font-bold font-cyber">{items.length}</div>
+                    <div className="text-[10px] font-mono-code opacity-70">{label}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 text-center text-xs font-mono-code text-green-600">
+              TOTAL ITEMS DISCOVERED: <span className="text-green-400 font-bold text-sm">{totalItems}</span>
+            </div>
+          </div>
+
+          {/* Detailed Results */}
+          <div className="space-y-2">
+            {RESULT_CONFIGS.map(({ key, label, icon, color }) => {
+              const items = (results[key] || []) as string[];
+              if (items.length === 0) return null;
+
+              const isExpanded = expandedSections.includes(key as string);
+
+              return (
+                <div
+                  key={key}
+                  className="border border-green-500/10 rounded-lg overflow-hidden bg-black/30"
+                >
+                  <button
+                    onClick={() => toggleSection(key as string)}
+                    className={`w-full flex items-center justify-between px-4 py-3 
+                              ${color.split(" ")[2]} hover:brightness-125 transition-all`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {icon}
+                      <span className="text-sm font-mono-code">{label}</span>
+                      <span className="text-xs opacity-60">({items.length})</span>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-4 py-2 max-h-[300px] overflow-y-auto">
+                      <div className="space-y-1">
+                        {items.map((item: string, i: number) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between py-1.5 px-2 rounded
+                                     hover:bg-white/5 group transition-colors"
+                          >
+                            <span className="text-xs font-mono-code text-green-300/80 truncate flex-1">
+                              {typeof item === "string" ? item : JSON.stringify(item)}
+                            </span>
+                            <button
+                              onClick={() =>
+                                copyItem(typeof item === "string" ? item : JSON.stringify(item))
+                              }
+                              className="ml-2 p-1 rounded opacity-0 group-hover:opacity-100 
+                                       hover:bg-green-400/10 transition-all"
+                            >
+                              {copiedItem === (typeof item === "string" ? item : JSON.stringify(item)) ? (
+                                <Check className="w-3 h-3 text-green-400" />
+                              ) : (
+                                <Copy className="w-3 h-3 text-green-600" />
+                              )}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
