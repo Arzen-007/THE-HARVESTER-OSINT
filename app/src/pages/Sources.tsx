@@ -87,7 +87,7 @@ export default function Sources() {
       }
       return acc;
     },
-    {} as typeof SOURCES_BY_CATEGORY
+    {} as Record<string, typeof SOURCES_BY_CATEGORY[keyof typeof SOURCES_BY_CATEGORY]>
   );
 
   return (

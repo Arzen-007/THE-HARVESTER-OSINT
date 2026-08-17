@@ -4,7 +4,6 @@ import { getDb } from "./queries/connection";
 import { scans, scanResults } from "@db/schema";
 import { eq, desc } from "drizzle-orm";
 import { spawn } from "child_process";
-import path from "path";
 import fs from "fs";
 
 // Helper to run a shell command and return output
@@ -29,9 +28,10 @@ export const osintRouter = createRouter({
   startScan: publicQuery
     .input(
       z.object({
-        tool: z.enum(["theHarvester", "amass", "sherlock", "nuclei"]),
+        // theHarvester scans use harvesterRouter.scan; this procedure handles only tools implemented below.
+        tool: z.enum(["amass", "sherlock", "nuclei"] as const),
         target: z.string().min(1),
-        options: z.record(z.any()).optional(),
+        options: z.record(z.string(), z.unknown()).optional(),
       })
     )
     .mutation(async ({ input }) => {
