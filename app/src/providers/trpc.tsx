@@ -14,8 +14,15 @@ const trpcClient = trpc.createClient({
       url: "/api/trpc",
       transformer: superjson,
       fetch(input, init) {
+        const headers = new Headers(init?.headers);
+        const accessToken = import.meta.env.VITE_OSINT_ACCESS_TOKEN;
+        if (accessToken) {
+          headers.set("x-osint-access-token", accessToken);
+        }
+
         return globalThis.fetch(input, {
           ...(init ?? {}),
+          headers,
           credentials: "include",
         });
       },
