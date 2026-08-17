@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { createRouter, publicQuery } from "./middleware";
+import { createRouter, protectedQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import { scans, scanResults } from "@db/schema";
 import { eq, desc } from "drizzle-orm";
 import { spawn } from "child_process";
-import path from "path";
 import fs from "fs";
 
 // Helper to run a shell command and return output
@@ -26,12 +25,13 @@ async function runCommand(command: string, args: string[]): Promise<string> {
 
 export const osintRouter = createRouter({
   // Start a scan with a specific tool
-  startScan: publicQuery
+  startScan: protectedQuery
     .input(
       z.object({
-        tool: z.enum(["theHarvester", "amass", "sherlock", "nuclei"]),
+        // theHarvester scans use harvesterRouter.scan; this procedure handles only tools implemented below.
+        tool: z.enum(["amass", "sherlock", "nuclei"] as const),
         target: z.string().min(1),
-        options: z.record(z.any()).optional(),
+        options: z.record(z.string(), z.unknown()).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -102,13 +102,13 @@ export const osintRouter = createRouter({
     }),
 
   // Get all scans
-  getScans: publicQuery.query(async () => {
+  getScans: protectedQuery.query(async () => {
     const db = getDb();
     return db.select().from(scans).orderBy(desc(scans.createdAt));
   }),
 
   // Get results for a specific scan
-  getResults: publicQuery
+  getResults: protectedQuery
     .input(z.object({ scanId: z.number() }))
     .query(async ({ input }) => {
       const db = getDb();

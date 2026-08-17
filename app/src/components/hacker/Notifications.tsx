@@ -80,7 +80,7 @@ const NotificationItem = ({ notification, onDismiss }: NotificationItemProps) =>
 };
 
 // Global notification context for easy access
-let notificationCallback: ((notification: Notification) => void) | null = null;
+let notificationCallback: ((notification: Omit<Notification, "id">) => void) | null = null;
 
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);

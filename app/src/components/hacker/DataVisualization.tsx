@@ -1,4 +1,4 @@
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface DataVisualizationProps {
   results: {
@@ -49,8 +49,6 @@ export default function DataVisualization({ results }: DataVisualizationProps) {
     name: type,
     value: count,
   }));
-
-  const COLORS = ["#22c55e", "#10b981", "#06b6d4", "#8b5cf6", "#f59e0b", "#ef4444"];
 
   return (
     <div className="space-y-6">

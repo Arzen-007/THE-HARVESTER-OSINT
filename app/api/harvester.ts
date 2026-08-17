@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createRouter, publicQuery } from "./middleware";
+import { createRouter, publicQuery, protectedQuery } from "./middleware";
 import { spawn } from "child_process";
 import path from "path";
 import { getDb } from "./queries/connection";
@@ -53,7 +53,7 @@ export const harvesterRouter = createRouter({
   }),
 
   // Start a new scan
-  scan: publicQuery
+  scan: protectedQuery
     .input(
       z.object({
         domain: z.string().min(3),
@@ -148,13 +148,13 @@ export const harvesterRouter = createRouter({
     }),
 
   // Get scan history
-  scanHistory: publicQuery.query(async () => {
+  scanHistory: protectedQuery.query(async () => {
     const db = getDb();
     return db.select().from(scans).orderBy(desc(scans.createdAt));
   }),
 
   // Get scan results
-  getScanResults: publicQuery
+  getScanResults: protectedQuery
     .input(z.object({ scanId: z.number() }))
     .query(async ({ input }) => {
       const db = getDb();
@@ -168,7 +168,7 @@ export const harvesterRouter = createRouter({
     }),
 
   // DNS Brute force
-  dnsBrute: publicQuery
+  dnsBrute: protectedQuery
     .input(
       z.object({
         domain: z.string().min(3),
